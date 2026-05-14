@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/auth.php';
+require_once __DIR__ . '/generate.php';
 require_login();
 header('Content-Type: application/json');
 
@@ -35,4 +36,6 @@ if ($written === false) {
     exit;
 }
 
-echo json_encode(['ok' => true]);
+$generated = generate_site($data);
+
+echo json_encode(['ok' => true, 'generated' => $generated]);
