@@ -9,8 +9,8 @@ define('MAX_UPLOAD_MB', 5);
 
 // ---- Email settings ----
 // Destination: where contact form submissions are sent
-define('MAIL_TO',       'hello@enigmaiq.ai');
-define('MAIL_TO_NAME',  'EnigmaIQ');
+define('MAIL_TO',       'brent@enigmamarketing.com');
+define('MAIL_TO_NAME',  'Brent');
 
 // Method: 'smtp_auth' = authenticated SSL (recommended), 'smtp' = no-auth, 'mail' = PHP mail()
 define('MAIL_METHOD',    'smtp_auth');
