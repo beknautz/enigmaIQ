@@ -60,7 +60,7 @@ document.getElementById('contactForm').addEventListener('submit', async (e) => {
     } else {
       btn.disabled = false;
       btn.textContent = 'Send Message';
-      showFormError(data.error || 'Something went wrong. Please try again.');
+      showFormError((data.error || 'Something went wrong.') + (data.debug ? ' — ' + data.debug : ''));
     }
   } catch {
     btn.disabled = false;

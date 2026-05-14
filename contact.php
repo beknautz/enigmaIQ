@@ -36,8 +36,9 @@ if ($service) $body .= "Looking to build: " . $service . "\r\n";
 $body .= "\r\nMessage:\r\n" . $message . "\r\n";
 
 // ---- Send ----
+$sent_error = '';
 if (MAIL_METHOD === 'smtp_auth') {
-    $sent = send_smtp_auth($subject, $body, $name, $email);
+    $sent = send_smtp_auth($subject, $body, $name, $email, $sent_error);
 } elseif (MAIL_METHOD === 'smtp') {
     $sent = send_smtp($subject, $body, $name, $email);
 } else {
@@ -48,7 +49,7 @@ if ($sent) {
     echo json_encode(['ok' => true]);
 } else {
     http_response_code(500);
-    echo json_encode(['ok' => false, 'error' => 'Message could not be sent. Please try again.']);
+    echo json_encode(['ok' => false, 'error' => 'Message could not be sent. Please try again.', 'debug' => $sent_error ?? '']);
 }
 
 // ================================================================
@@ -64,19 +65,22 @@ function send_mail($subject, $body, $reply_name, $reply_email) {
 // ================================================================
 // SMTP with AUTH LOGIN over SSL — mail13.ezhostingserver.com:465
 // ================================================================
-function send_smtp_auth($subject, $body, $reply_name, $reply_email) {
+function send_smtp_auth($subject, $body, $reply_name, $reply_email, &$error = '') {
     $fp = @fsockopen('ssl://' . SMTP_HOST, SMTP_PORT, $errno, $errstr, 15);
-    if (!$fp) return false;
+    if (!$fp) {
+        $error = "Connection failed: [$errno] $errstr";
+        return false;
+    }
 
     stream_set_timeout($fp, 15);
     $host = $_SERVER['HTTP_HOST'] ?? 'enigmaiq.ai';
 
     $conversation = [
-        null,                                       // read server greeting
-        'EHLO ' . $host,                            // introduce ourselves
-        'AUTH LOGIN',                               // request auth
-        base64_encode(SMTP_USER),                   // username
-        base64_encode(SMTP_PASS),                   // password
+        null,
+        'EHLO ' . $host,
+        'AUTH LOGIN',
+        base64_encode(SMTP_USER),
+        base64_encode(SMTP_PASS),
         'MAIL FROM:<' . MAIL_FROM . '>',
         'RCPT TO:<' . MAIL_TO . '>',
         'DATA',
@@ -101,8 +105,14 @@ function send_smtp_auth($subject, $body, $reply_name, $reply_email) {
         }
         $response = fgets($fp, 512);
         $code = (int) substr($response, 0, 3);
-        if ($cmd === 'DATA' && $code !== 354) { fclose($fp); return false; }
-        elseif ($cmd !== 'DATA' && $code >= 400) { fclose($fp); return false; }
+        if ($cmd === 'DATA' && $code !== 354) {
+            $error = "DATA rejected: $response";
+            fclose($fp); return false;
+        } elseif ($cmd !== 'DATA' && $code >= 400) {
+            $label = $cmd ?? 'greeting';
+            $error = "SMTP error at [$label]: $response";
+            fclose($fp); return false;
+        }
     }
 
     fclose($fp);
