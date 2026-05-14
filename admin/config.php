@@ -12,9 +12,17 @@ define('MAX_UPLOAD_MB', 5);
 define('MAIL_TO',       'hello@enigmaiq.ai');
 define('MAIL_TO_NAME',  'EnigmaIQ');
 
-// Method: 'mail' uses PHP mail(), 'smtp' uses smtpmailer.hostek.net (no auth)
-define('MAIL_METHOD',   'smtp');
-define('SMTP_HOST',     'smtpmailer.hostek.net');
-define('SMTP_PORT',     25);
-define('MAIL_FROM',     'hello@enigmaiq.ai');
-define('MAIL_FROM_NAME','EnigmaIQ Website');
+// Method: 'smtp_auth' = authenticated SSL (recommended), 'smtp' = no-auth, 'mail' = PHP mail()
+define('MAIL_METHOD',    'smtp_auth');
+define('MAIL_FROM',      'mailsend@enigmaiq.ai');
+define('MAIL_FROM_NAME', 'EnigmaIQ Website');
+
+// Authenticated SMTP (SSL, port 465)
+define('SMTP_HOST',     'mail13.ezhostingserver.com');
+define('SMTP_PORT',     465);
+define('SMTP_USER',     'mailsend@enigmaiq.ai');
+define('SMTP_PASS',     'YOUR_EMAIL_PASSWORD_HERE');  // ← set this
+
+// Fallback no-auth SMTP
+define('SMTP_NOAUTH_HOST', 'smtpmailer.hostek.net');
+define('SMTP_NOAUTH_PORT', 25);
