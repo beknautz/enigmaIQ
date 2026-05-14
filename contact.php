@@ -4,6 +4,7 @@ error_reporting(0);
 ini_set('display_errors', 0);
 
 require_once __DIR__ . '/admin/config.php';
+require_once __DIR__ . '/admin/dkim.php';
 header('Content-Type: application/json');
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -70,12 +71,36 @@ if ($sent) {
 }
 
 // ================================================================
+// Shared: build RFC-compliant message with optional DKIM signature
+// ================================================================
+function smtp_build_message($subject, $body, $reply_name, $reply_email) {
+    $headers  = 'From: ' . MAIL_FROM_NAME . ' <' . MAIL_FROM . '>' . "\r\n";
+    $headers .= 'To: ' . MAIL_TO_NAME . ' <' . MAIL_TO . '>' . "\r\n";
+    $headers .= 'Reply-To: ' . $reply_name . ' <' . $reply_email . '>' . "\r\n";
+    $headers .= 'Subject: ' . $subject . "\r\n";
+    $headers .= 'Date: ' . date('r') . "\r\n";
+    $headers .= 'MIME-Version: 1.0' . "\r\n";
+    $headers .= 'Content-Type: text/plain; charset=UTF-8';
+
+    $dkim = dkim_sign($headers, $body);
+    $full = ($dkim ? $dkim . "\r\n" : '') . $headers . "\r\n\r\n" . $body;
+    return $full . "\r\n.";
+}
+
+// ================================================================
 // PHP mail()
 // ================================================================
 function send_mail($subject, $body, $reply_name, $reply_email) {
     $headers  = 'From: ' . MAIL_FROM_NAME . ' <' . MAIL_FROM . '>' . "\r\n";
+    $headers .= 'To: ' . MAIL_TO_NAME . ' <' . MAIL_TO . '>' . "\r\n";
     $headers .= 'Reply-To: ' . $reply_name . ' <' . $reply_email . '>' . "\r\n";
-    $headers .= 'X-Mailer: PHP/' . phpversion();
+    $headers .= 'Date: ' . date('r') . "\r\n";
+    $headers .= 'MIME-Version: 1.0' . "\r\n";
+    $headers .= 'Content-Type: text/plain; charset=UTF-8';
+
+    $dkim = dkim_sign($headers, $body);
+    if ($dkim) $headers = $dkim . "\r\n" . $headers;
+
     return @mail(MAIL_TO, $subject, $body, $headers);
 }
 
@@ -113,18 +138,7 @@ function send_smtp_auth($subject, $body, $reply_name, $reply_email, &$error = ''
         'MAIL FROM:<' . MAIL_FROM . '>',
         'RCPT TO:<' . MAIL_TO . '>',
         'DATA',
-        implode("\r\n", [
-            'From: ' . MAIL_FROM_NAME . ' <' . MAIL_FROM . '>',
-            'To: ' . MAIL_TO_NAME . ' <' . MAIL_TO . '>',
-            'Reply-To: ' . $reply_name . ' <' . $reply_email . '>',
-            'Subject: ' . $subject,
-            'Date: ' . date('r'),
-            'MIME-Version: 1.0',
-            'Content-Type: text/plain; charset=UTF-8',
-            '',
-            $body,
-            '.',
-        ]),
+        smtp_build_message($subject, $body, $reply_name, $reply_email),
         'QUIT',
     ];
 
@@ -164,18 +178,7 @@ function send_smtp($subject, $body, $reply_name, $reply_email, &$error = '') {
         'MAIL FROM:<' . MAIL_FROM . '>',
         'RCPT TO:<' . MAIL_TO . '>',
         'DATA',
-        implode("\r\n", [
-            'From: ' . MAIL_FROM_NAME . ' <' . MAIL_FROM . '>',
-            'To: ' . MAIL_TO_NAME . ' <' . MAIL_TO . '>',
-            'Reply-To: ' . $reply_name . ' <' . $reply_email . '>',
-            'Subject: ' . $subject,
-            'Date: ' . date('r'),
-            'MIME-Version: 1.0',
-            'Content-Type: text/plain; charset=UTF-8',
-            '',
-            $body,
-            '.',
-        ]),
+        smtp_build_message($subject, $body, $reply_name, $reply_email),
         'QUIT',
     ];
 
