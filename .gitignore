@@ -1,0 +1,10 @@
+# Uploaded images (committed via FTP, not git)
+uploads/*.jpg
+uploads/*.jpeg
+uploads/*.png
+uploads/*.gif
+uploads/*.webp
+
+# OS
+.DS_Store
+Thumbs.db

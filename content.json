@@ -1,0 +1,182 @@
+{
+  "meta": {
+    "title": "EnigmaIQ — AI Integration & Development",
+    "description": "Accelerating business transformation through intelligent AI integration, rapid development, and deep technical expertise."
+  },
+  "nav": {
+    "logo_text": "EnigmaIQ",
+    "cta_label": "Start a Project"
+  },
+  "hero": {
+    "badge": "AI Integration & Development",
+    "headline_1": "Intelligence,",
+    "headline_2": "Engineered.",
+    "subtext": "We embed AI into the heart of your business — accelerating product development, automating complex workflows, and unlocking capabilities that were impossible last year.",
+    "cta_primary": "Start a Project",
+    "cta_secondary": "See What We Build",
+    "stat_1_num": "10×",
+    "stat_1_label": "Faster to Market",
+    "stat_2_num": "60%",
+    "stat_2_label": "Cost Reduction",
+    "stat_3_num": "Days",
+    "stat_3_label": "Not Months to Deploy",
+    "bg_image": ""
+  },
+  "services": {
+    "tag": "What We Build",
+    "title": "End-to-end AI development for real business impact",
+    "subtitle": "From strategy to production. We don't just advise — we build.",
+    "cards": [
+      {
+        "title": "AI System Integration",
+        "description": "Embed intelligent capabilities directly into your existing stack. CRMs, ERPs, workflows — we connect AI where it creates leverage, not disruption.",
+        "items": ["LLM API orchestration", "Data pipeline automation", "Legacy system modernization"],
+        "featured": true
+      },
+      {
+        "title": "Custom AI Applications",
+        "description": "Purpose-built tools tailored to your industry. Not generic demos — production software that solves your specific problem at scale.",
+        "items": ["Industry-specific AI tools", "Internal productivity apps", "Customer-facing AI features"],
+        "featured": false
+      },
+      {
+        "title": "Agentic Workflows",
+        "description": "AI agents that reason, plan, and act across your systems autonomously. Delegate entire business processes — not just single tasks.",
+        "items": ["Multi-agent orchestration", "Document intelligence", "Automated decision pipelines"],
+        "featured": false
+      },
+      {
+        "title": "RAG & Knowledge Systems",
+        "description": "Give AI your institutional knowledge. Build systems that surface the right information at the right moment — from any document, database, or conversation.",
+        "items": ["Vector search & retrieval", "Knowledge base construction", "Context-aware assistants"],
+        "featured": false
+      },
+      {
+        "title": "Rapid Prototyping",
+        "description": "From concept to working prototype in days. We validate ideas fast so you can make confident bets — and kill bad ones before they cost you.",
+        "items": ["48-hour proof of concept", "Stakeholder-ready demos", "Technical feasibility scoping"],
+        "featured": false
+      },
+      {
+        "title": "AI Strategy & Audit",
+        "description": "Map where AI creates leverage in your operation. We identify quick wins, long-term plays, and the risks most teams overlook until it's too late.",
+        "items": ["Opportunity mapping", "Build vs. buy analysis", "AI readiness assessment"],
+        "featured": false
+      }
+    ]
+  },
+  "why": {
+    "tag": "The Shift",
+    "title": "This isn't a trend. It's a structural change.",
+    "subtitle": "Every industry is being restructured by AI. The companies moving now are building compounding advantages that will be nearly impossible to close in two years.",
+    "cta_label": "Get Ahead of It",
+    "cards": [
+      {
+        "num": "01",
+        "title": "Speed becomes a superpower",
+        "body": "Teams using AI ship features in hours that used to take weeks. The development loop compresses from months to days — giving early adopters a relentless iteration advantage."
+      },
+      {
+        "num": "02",
+        "title": "Labor economics invert",
+        "body": "One well-architected AI system can do the work of entire departments — without fatigue, inconsistency, or scaling friction. The cost to operate goes down as volume goes up."
+      },
+      {
+        "num": "03",
+        "title": "Data becomes your moat",
+        "body": "Businesses that train AI on proprietary workflows and knowledge build a flywheel competitors can't replicate. Your data becomes your most defensible asset."
+      },
+      {
+        "num": "04",
+        "title": "Customer expectations reset",
+        "body": "AI-native experiences set a new baseline. Businesses that don't adapt will feel the friction — in retention, in hiring, in reputation with partners and customers alike."
+      }
+    ]
+  },
+  "process": {
+    "tag": "How We Work",
+    "title": "From kickoff to production in weeks, not quarters",
+    "subtitle": "A lean, focused process designed for fast delivery and lasting impact.",
+    "steps": [
+      {
+        "num": "01",
+        "title": "Discover",
+        "body": "Deep dive into your operations, goals, and data landscape. We identify where AI creates the highest-leverage outcomes and what success looks like."
+      },
+      {
+        "num": "02",
+        "title": "Design",
+        "body": "Architecture, model selection, data strategy, integration points. A clear technical blueprint before a single line of code is written."
+      },
+      {
+        "num": "03",
+        "title": "Build",
+        "body": "Rapid development with frequent demos. You see real progress weekly — not a black box that opens six months later."
+      },
+      {
+        "num": "04",
+        "title": "Deploy",
+        "body": "Production-grade deployment with monitoring, fallbacks, and guardrails. AI that actually works in the real world, not just in demos."
+      },
+      {
+        "num": "05",
+        "title": "Optimize",
+        "body": "Continuous improvement through feedback loops, fine-tuning, and performance analytics. Systems that get smarter as they run."
+      }
+    ]
+  },
+  "results": {
+    "tag": "Impact",
+    "title": "What AI integration actually delivers",
+    "cards": [
+      {
+        "num": "10×",
+        "label": "Development Speed",
+        "body": "AI-assisted development compresses build cycles. What used to take a quarter ships in weeks."
+      },
+      {
+        "num": "60%",
+        "label": "Operational Cost Reduction",
+        "body": "Automated workflows replace manual overhead. Teams refocus on high-value work instead of repetitive tasks."
+      },
+      {
+        "num": "24/7",
+        "label": "Continuous Operation",
+        "body": "AI systems don't sleep, go on vacation, or have bad days. Consistent output at any scale, any hour."
+      },
+      {
+        "num": "∞",
+        "label": "Scalability",
+        "body": "Handle 10 requests or 10 million with the same infrastructure. AI scales without proportional headcount growth."
+      }
+    ],
+    "capabilities": [
+      "Production deployments in days",
+      "Model-agnostic architecture",
+      "Security-first by design",
+      "Integrates with existing stack",
+      "No vendor lock-in",
+      "Full IP ownership"
+    ]
+  },
+  "contact": {
+    "tag": "Let's Build",
+    "title": "Ready to move faster with AI?",
+    "subtitle": "Tell us what you're trying to solve. We'll respond within 24 hours with an honest assessment of how AI can help — and whether we're the right team to build it.",
+    "services_options": [
+      "AI System Integration",
+      "Custom AI Application",
+      "Workflow Automation",
+      "RAG / Knowledge System",
+      "Rapid Prototype",
+      "AI Strategy & Audit",
+      "Something else"
+    ],
+    "form_email": ""
+  },
+  "footer": {
+    "brand_text": "AI integration and development for businesses moving at the speed of now.",
+    "copyright": "© 2025 EnigmaIQ. All rights reserved.",
+    "domain": "enigmaiq.ai"
+  }
+}
