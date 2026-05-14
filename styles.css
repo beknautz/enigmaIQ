@@ -250,6 +250,17 @@ input, textarea, select { font-family: inherit; }
   align-items: center;
   overflow: hidden;
 }
+.hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(7, 7, 13, 0.8);
+  z-index: 1;
+  pointer-events: none;
+}
+.hero-grid-bg, .hero-glow, .hero-inner, .scroll-indicator {
+  z-index: 2;
+}
 
 .hero-grid-bg {
   position: absolute;
