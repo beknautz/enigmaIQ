@@ -32,13 +32,54 @@ const observer = new IntersectionObserver((entries) => {
 fadeEls.forEach(el => observer.observe(el));
 
 // Contact form
-document.getElementById('contactForm').addEventListener('submit', (e) => {
+document.getElementById('contactForm').addEventListener('submit', async (e) => {
   e.preventDefault();
-  const btn = e.target.querySelector('button[type="submit"]');
-  btn.textContent = 'Message Sent';
-  btn.style.background = 'linear-gradient(135deg, #059669, #10b981)';
+  const form = e.target;
+  const btn  = form.querySelector('button[type="submit"]');
+  const inputs = form.querySelectorAll('input, select, textarea');
+
   btn.disabled = true;
+  btn.textContent = 'Sending…';
+
+  const body = new URLSearchParams({
+    name:    form.querySelector('input[type="text"]').value,
+    email:   form.querySelector('input[type="email"]').value,
+    company: form.querySelectorAll('input[type="text"]')[1]?.value ?? '',
+    service: form.querySelector('select').value,
+    message: form.querySelector('textarea').value,
+  });
+
+  try {
+    const res  = await fetch('contact.php', { method: 'POST', body });
+    const data = await res.json();
+
+    if (data.ok) {
+      btn.textContent = 'Message Sent ✓';
+      btn.style.background = 'linear-gradient(135deg, #059669, #10b981)';
+      form.reset();
+    } else {
+      btn.disabled = false;
+      btn.textContent = 'Send Message';
+      showFormError(data.error || 'Something went wrong. Please try again.');
+    }
+  } catch {
+    btn.disabled = false;
+    btn.textContent = 'Send Message';
+    showFormError('Could not reach the server. Please try again.');
+  }
 });
+
+function showFormError(msg) {
+  let el = document.getElementById('formError');
+  if (!el) {
+    el = document.createElement('p');
+    el.id = 'formError';
+    el.style.cssText = 'color:#fca5a5;font-size:14px;margin-top:12px;text-align:center';
+    document.getElementById('contactForm').appendChild(el);
+  }
+  el.textContent = msg;
+  setTimeout(() => { el.textContent = ''; }, 5000);
+}
 
 // Smooth stagger for hero elements on load
 document.addEventListener('DOMContentLoaded', () => {
