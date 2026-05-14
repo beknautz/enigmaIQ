@@ -1,53 +1,12 @@
 <?php
-/**
- * One-time DKIM key generator.
- * Run this once at enigmaiq.ai/admin/setup-dkim.php (while logged in),
- * then DELETE this file from the server.
- */
 require_once __DIR__ . '/auth.php';
 require_login();
 
-$keyDir  = __DIR__ . '/keys/';
-$privKey = $keyDir . 'dkim_private.pem';
-$pubKey  = $keyDir . 'dkim_public.pem';
-$message = '';
-$dnsRecord = '';
-$alreadyExists = file_exists($privKey);
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$alreadyExists) {
-    if (!is_dir($keyDir)) mkdir($keyDir, 0700, true);
-
-    $config = [
-        'digest_alg'       => 'sha256',
-        'private_key_bits' => 2048,
-        'private_key_type' => OPENSSL_KEYTYPE_RSA,
-    ];
-
-    $res = openssl_pkey_new($config);
-    if (!$res) {
-        $message = 'OpenSSL is not available on this server. Ask Hostek to generate DKIM keys for enigmaiq.ai through cPanel.';
-    } else {
-        openssl_pkey_export($res, $privPem);
-        $details = openssl_pkey_get_details($res);
-        $pubPem  = $details['key'];
-
-        file_put_contents($privKey, $privPem);
-        chmod($privKey, 0600);
-        file_put_contents($pubKey, $pubPem);
-
-        // Strip PEM headers and whitespace for the DNS TXT record
-        $pubStripped = preg_replace('/-----.*?-----|\s/', '', $pubPem);
-        $dnsRecord = 'v=DKIM1; k=rsa; p=' . $pubStripped;
-        $message = 'success';
-    }
-}
-
-// If keys already exist, just show the DNS record
-if ($alreadyExists) {
-    $pubPem = file_get_contents($pubKey);
-    $pubStripped = preg_replace('/-----.*?-----|\s/', '', $pubPem);
-    $dnsRecord = 'v=DKIM1; k=rsa; p=' . $pubStripped;
-}
+$pubKey = 'MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAu+4A3jH6xr+Ep9XuGFa5Sb0UTs/9KiEViT0w0vYEC9YVQbFKIwh8FqjM9Cc4bxNS+HoZ1xwFIwtkRVg/kvnm1qdbE8dBpS8LS55cm2VdHo82b6EbYyz14ke6jOpi6tElnh0gNZ0XzaImSbeHwewbMWRhDoiPbO/UNa1PL3gAJie256wye4ENEqjV7EZbUbzh1WcxkL8U9W8wnxjN76ECUxbD1pQIL2aciTnux8/yHXccp3jn60l57G7Y1GqE5pUBBQIJ0MYb2dYT3/K8MuRMsVMRwib0EGbubhE8OfDgTsSdauxHBlkWXbVn72UH2GAm9/xNVSwygumffIjoEtvh6QIDAQAB';
+$dkimRecord  = 'v=DKIM1; k=rsa; p=' . $pubKey;
+$spfRecord   = 'v=spf1 a mx include:ezhostingserver.com ~all';
+$dmarcRecord = 'v=DMARC1; p=quarantine; rua=mailto:brent@enigmamarketing.com; fo=1';
+$keyExists   = file_exists(__DIR__ . '/keys/dkim_private.pem');
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -61,13 +20,13 @@ if ($alreadyExists) {
       --bg:#07070d; --bg-2:#0d0d1a; --border:rgba(255,255,255,0.08);
       --border-bright:rgba(255,255,255,0.14); --surface:rgba(255,255,255,0.04);
       --text:#f0f0f8; --muted:#8888a8; --dim:#55556a;
-      --purple:#7c3aed; --purple-light:#a78bfa; --green:#10b981; --red:#ef4444;
+      --purple:#7c3aed; --purple-light:#a78bfa; --green:#10b981;
       --grad:linear-gradient(135deg,#7c3aed,#2563eb); --mono:'JetBrains Mono',monospace;
     }
     body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text);
       min-height:100vh; display:flex; align-items:center; justify-content:center;
       padding:40px 24px; -webkit-font-smoothing:antialiased; }
-    .card { width:100%; max-width:760px; background:var(--bg-2); border:1px solid var(--border);
+    .card { width:100%; max-width:780px; background:var(--bg-2); border:1px solid var(--border);
       border-radius:20px; padding:48px; }
     .logo { display:flex; align-items:center; gap:10px; margin-bottom:36px; }
     .logo-mark { width:32px; height:32px; border-radius:8px; background:var(--grad);
@@ -79,152 +38,163 @@ if ($alreadyExists) {
       padding:28px; margin-bottom:16px; }
     .step-num { font-size:11px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase;
       color:var(--purple-light); margin-bottom:10px; }
-    .step h3 { font-size:1rem; font-weight:700; margin-bottom:8px; }
+    .step h3 { font-size:1rem; font-weight:700; margin-bottom:10px; }
     .step p { font-size:14px; color:var(--muted); line-height:1.6; margin-bottom:14px; }
-    .step p:last-child { margin-bottom:0; }
-    .dns-block { background:#0a0a14; border:1px solid var(--border-bright); border-radius:10px;
-      padding:20px; margin-top:14px; }
-    .dns-row { display:grid; grid-template-columns:160px 80px 1fr; gap:16px;
-      align-items:start; margin-bottom:14px; font-family:var(--mono); font-size:12px; }
-    .dns-row:last-child { margin-bottom:0; }
-    .dns-label { color:var(--dim); font-size:11px; font-weight:700; letter-spacing:0.06em;
-      text-transform:uppercase; margin-bottom:4px; }
-    .dns-val { color:var(--text); word-break:break-all; }
-    .dns-val.highlight { color:var(--purple-light); }
-    label { display:block; font-size:11px; font-weight:700; letter-spacing:0.08em;
-      text-transform:uppercase; color:var(--dim); margin-bottom:7px; }
-    textarea { width:100%; padding:14px; background:var(--surface); border:1px solid var(--border-bright);
-      border-radius:8px; color:var(--text); font-family:var(--mono); font-size:12px;
-      resize:none; outline:none; line-height:1.6; }
-    .btn { display:inline-flex; align-items:center; gap:8px; padding:12px 24px;
-      background:var(--grad); color:#fff; border:none; border-radius:9px;
-      font-size:14px; font-weight:700; font-family:inherit; cursor:pointer; transition:0.2s; }
-    .btn:hover { opacity:0.9; transform:translateY(-1px); }
-    .btn-back { background:var(--surface); border:1px solid var(--border-bright);
-      color:var(--muted); text-decoration:none; }
-    .alert { padding:14px 18px; border-radius:10px; font-size:14px; font-weight:600;
-      margin-bottom:24px; }
-    .alert-success { background:rgba(16,185,129,0.12); border:1px solid rgba(16,185,129,0.3); color:#34d399; }
-    .alert-warn { background:rgba(245,158,11,0.12); border:1px solid rgba(245,158,11,0.3); color:#fcd34d; }
-    .alert-error { background:rgba(239,68,68,0.12); border:1px solid rgba(239,68,68,0.3); color:#fca5a5; }
-    .tag { display:inline-block; font-size:10px; font-weight:700; letter-spacing:0.08em;
-      text-transform:uppercase; padding:3px 8px; border-radius:4px; margin-left:8px; vertical-align:middle; }
-    .tag-green { background:rgba(16,185,129,0.15); color:#34d399; }
+    .dns-block { background:#0a0a14; border:1px solid var(--border-bright); border-radius:10px; padding:24px; margin-top:14px; }
+    .dns-section { margin-bottom:24px; padding-bottom:24px; border-bottom:1px solid var(--border); }
+    .dns-section:last-child { margin-bottom:0; padding-bottom:0; border-bottom:none; }
+    .dns-section-label { font-size:11px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase;
+      color:var(--dim); margin-bottom:14px; display:flex; align-items:center; gap:8px; }
+    .tag { font-size:10px; font-weight:700; letter-spacing:0.06em; text-transform:uppercase;
+      padding:2px 7px; border-radius:4px; }
     .tag-orange { background:rgba(245,158,11,0.15); color:#fcd34d; }
+    .tag-green  { background:rgba(16,185,129,0.15); color:#34d399; }
+    .dns-grid { display:grid; grid-template-columns:140px 60px 1fr; gap:12px 20px; align-items:start; }
+    .dns-label { font-size:10px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+      color:var(--dim); margin-bottom:4px; }
+    .dns-val { font-family:var(--mono); font-size:12px; color:var(--text); word-break:break-all; }
+    .dns-val.hl { color:var(--purple-light); }
+    textarea { width:100%; padding:11px 14px; background:var(--surface); border:1px solid var(--border-bright);
+      border-radius:8px; color:var(--text); font-family:var(--mono); font-size:12px;
+      resize:none; outline:none; line-height:1.7; cursor:pointer; }
+    textarea:focus { border-color:var(--purple); }
+    .copy-btn { display:inline-flex; align-items:center; gap:6px; padding:6px 12px; margin-top:8px;
+      background:var(--surface); border:1px solid var(--border-bright); border-radius:6px;
+      color:var(--muted); font-size:12px; font-weight:600; font-family:inherit; cursor:pointer; transition:0.15s; }
+    .copy-btn:hover { background:rgba(255,255,255,0.07); color:var(--text); }
+    .copy-btn.copied { color:#34d399; border-color:rgba(16,185,129,0.3); }
+    .alert { padding:14px 18px; border-radius:10px; font-size:14px; font-weight:600; margin-bottom:24px; display:flex; align-items:center; gap:10px; }
+    .alert-success { background:rgba(16,185,129,0.12); border:1px solid rgba(16,185,129,0.3); color:#34d399; }
+    .alert-warn    { background:rgba(245,158,11,0.12); border:1px solid rgba(245,158,11,0.3); color:#fcd34d; }
     .delete-warning { margin-top:24px; padding:14px 18px; border-radius:10px; font-size:13px;
       background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.25); color:#fca5a5; }
-    .col2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+    .btn-back { display:inline-flex; align-items:center; gap:8px; padding:11px 22px; margin-top:24px;
+      background:var(--surface); border:1px solid var(--border-bright); border-radius:9px;
+      color:var(--muted); font-size:14px; font-weight:600; font-family:inherit; text-decoration:none; transition:0.15s; }
+    .btn-back:hover { color:var(--text); background:rgba(255,255,255,0.07); }
   </style>
 </head>
 <body>
 <div class="card">
   <div class="logo">
     <div class="logo-mark">E</div>
-    <span class="logo-text">EnigmaIQ — DKIM Setup</span>
+    <span class="logo-text">EnigmaIQ — Email Authentication</span>
   </div>
 
-  <h1>Email Authentication Setup</h1>
-  <p class="subtitle">Configure DKIM, DMARC, and SPF to improve deliverability and prevent spoofing for enigmaiq.ai.</p>
+  <h1>DKIM, SPF &amp; DMARC Setup</h1>
+  <p class="subtitle">Add these 3 DNS records to enigmaiq.ai to authenticate outgoing email, improve deliverability, and prevent spoofing.</p>
 
-  <?php if ($message === 'success'): ?>
-    <div class="alert alert-success">DKIM key pair generated and saved. Add the DNS records below.</div>
-  <?php elseif ($message && $message !== 'success'): ?>
-    <div class="alert alert-error"><?= htmlspecialchars($message) ?></div>
+  <?php if ($keyExists): ?>
+    <div class="alert alert-success">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+      Private key is on the server and ready to sign emails.
+    </div>
+  <?php else: ?>
+    <div class="alert alert-warn">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      Private key not found on server — FTP <code>admin/keys/dkim_private.pem</code> to activate signing.
+    </div>
   <?php endif; ?>
 
-  <?php if (!$alreadyExists && $message !== 'success'): ?>
-  <!-- GENERATE KEYS -->
-  <div class="step">
-    <div class="step-num">Step 1 of 1</div>
-    <h3>Generate DKIM Key Pair</h3>
-    <p>This creates a 2048-bit RSA key pair. The private key stays on this server (never shared). The public key goes into your DNS as a TXT record.</p>
-    <form method="POST">
-      <button type="submit" class="btn">Generate Keys Now</button>
-    </form>
-  </div>
-  <?php else: ?>
-
-  <!-- DNS RECORDS -->
   <div class="step">
     <div class="step-num">Step 1 — Add DNS Records</div>
-    <h3>Add these 3 records in your DNS manager</h3>
-    <p>Log into your domain registrar or Hostek's DNS manager and add the following TXT records for <strong>enigmaiq.ai</strong>.</p>
+    <h3>Log into your DNS manager and add these 3 TXT records</h3>
+    <p>Use your domain registrar or Hostek's DNS manager. DNS changes take 24–48 hours to propagate.</p>
 
     <div class="dns-block">
 
-      <p style="font-size:12px;color:var(--dim);margin-bottom:16px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;">DKIM <span class="tag tag-orange">Required</span></p>
-      <div style="margin-bottom:6px">
-        <div class="dns-label">Host / Name</div>
-        <div class="dns-val highlight" style="font-family:var(--mono);font-size:13px">mail._domainkey.enigmaiq.ai</div>
-      </div>
-      <div style="margin-bottom:6px">
-        <div class="dns-label">Type</div>
-        <div class="dns-val" style="font-family:var(--mono);font-size:13px">TXT</div>
-      </div>
-      <div style="margin-bottom:0">
-        <div class="dns-label">Value</div>
-        <textarea rows="4" onclick="this.select()" readonly><?= htmlspecialchars($dnsRecord) ?></textarea>
-      </div>
-
-      <hr style="border:none;border-top:1px solid var(--border);margin:20px 0" />
-
-      <p style="font-size:12px;color:var(--dim);margin-bottom:16px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;">SPF <span class="tag tag-orange">Required</span></p>
-      <div class="col2">
-        <div>
-          <div class="dns-label">Host / Name</div>
-          <div class="dns-val highlight" style="font-family:var(--mono);font-size:13px">enigmaiq.ai</div>
-        </div>
-        <div>
-          <div class="dns-label">Type</div>
-          <div class="dns-val" style="font-family:var(--mono);font-size:13px">TXT</div>
+      <!-- DKIM -->
+      <div class="dns-section">
+        <div class="dns-section-label">DKIM <span class="tag tag-orange">Required</span></div>
+        <div class="dns-grid">
+          <div>
+            <div class="dns-label">Host / Name</div>
+            <div class="dns-val hl">mail._domainkey</div>
+            <div style="font-size:11px;color:var(--dim);margin-top:3px">.enigmaiq.ai</div>
+          </div>
+          <div>
+            <div class="dns-label">Type</div>
+            <div class="dns-val">TXT</div>
+          </div>
+          <div>
+            <div class="dns-label">Value</div>
+            <textarea id="dkim-val" rows="4" onclick="this.select()" readonly><?= htmlspecialchars($dkimRecord) ?></textarea>
+            <button class="copy-btn" onclick="copyField('dkim-val', this)">Copy</button>
+          </div>
         </div>
       </div>
-      <div style="margin-top:10px">
-        <div class="dns-label">Value</div>
-        <textarea rows="2" onclick="this.select()" readonly>v=spf1 a mx include:ezhostingserver.com ~all</textarea>
+
+      <!-- SPF -->
+      <div class="dns-section">
+        <div class="dns-section-label">SPF <span class="tag tag-orange">Required</span></div>
+        <div class="dns-grid">
+          <div>
+            <div class="dns-label">Host / Name</div>
+            <div class="dns-val hl">@</div>
+            <div style="font-size:11px;color:var(--dim);margin-top:3px">enigmaiq.ai</div>
+          </div>
+          <div>
+            <div class="dns-label">Type</div>
+            <div class="dns-val">TXT</div>
+          </div>
+          <div>
+            <div class="dns-label">Value</div>
+            <textarea id="spf-val" rows="2" onclick="this.select()" readonly><?= htmlspecialchars($spfRecord) ?></textarea>
+            <button class="copy-btn" onclick="copyField('spf-val', this)">Copy</button>
+          </div>
+        </div>
       </div>
 
-      <hr style="border:none;border-top:1px solid var(--border);margin:20px 0" />
-
-      <p style="font-size:12px;color:var(--dim);margin-bottom:16px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;">DMARC <span class="tag tag-green">Recommended</span></p>
-      <div class="col2">
-        <div>
-          <div class="dns-label">Host / Name</div>
-          <div class="dns-val highlight" style="font-family:var(--mono);font-size:13px">_dmarc.enigmaiq.ai</div>
+      <!-- DMARC -->
+      <div class="dns-section">
+        <div class="dns-section-label">DMARC <span class="tag tag-green">Recommended</span></div>
+        <div class="dns-grid">
+          <div>
+            <div class="dns-label">Host / Name</div>
+            <div class="dns-val hl">_dmarc</div>
+            <div style="font-size:11px;color:var(--dim);margin-top:3px">.enigmaiq.ai</div>
+          </div>
+          <div>
+            <div class="dns-label">Type</div>
+            <div class="dns-val">TXT</div>
+          </div>
+          <div>
+            <div class="dns-label">Value</div>
+            <textarea id="dmarc-val" rows="2" onclick="this.select()" readonly><?= htmlspecialchars($dmarcRecord) ?></textarea>
+            <button class="copy-btn" onclick="copyField('dmarc-val', this)">Copy</button>
+          </div>
         </div>
-        <div>
-          <div class="dns-label">Type</div>
-          <div class="dns-val" style="font-family:var(--mono);font-size:13px">TXT</div>
-        </div>
-      </div>
-      <div style="margin-top:10px">
-        <div class="dns-label">Value</div>
-        <textarea rows="2" onclick="this.select()" readonly>v=DMARC1; p=quarantine; rua=mailto:brent@enigmamarketing.com; fo=1</textarea>
       </div>
 
     </div>
   </div>
 
   <div class="step">
-    <div class="step-num">Step 2 — Verify (after DNS propagates ~24–48hrs)</div>
-    <h3>Check your records are live</h3>
-    <p>Run these in a terminal or use <strong>mxtoolbox.com</strong>:</p>
-    <div class="dns-block" style="font-family:var(--mono);font-size:12px;line-height:2">
-      dig TXT mail._domainkey.enigmaiq.ai<br/>
-      dig TXT _dmarc.enigmaiq.ai<br/>
-      dig TXT enigmaiq.ai
+    <div class="step-num">Step 2 — Verify (after DNS propagates)</div>
+    <h3>Check your records at mxtoolbox.com</h3>
+    <p>Use the DKIM Lookup tool with selector <strong>mail</strong> and domain <strong>enigmaiq.ai</strong>. All three records should show green.</p>
+    <div style="background:#0a0a14;border:1px solid var(--border-bright);border-radius:10px;padding:16px;font-family:var(--mono);font-size:12px;line-height:2;color:var(--muted)">
+      DKIM: mxtoolbox.com/dkim <span style="color:var(--dim)">— selector: mail</span><br/>
+      SPF: mxtoolbox.com/spf<br/>
+      DMARC: mxtoolbox.com/dmarc
     </div>
   </div>
 
   <div class="delete-warning">
-    <strong>Security:</strong> Delete this file from the server once DNS is configured — <code>admin/setup-dkim.php</code>
+    <strong>Security:</strong> Once DNS is set up, delete <code>admin/setup-dkim.php</code> from the server.
   </div>
 
-  <?php endif; ?>
-
-  <div style="margin-top:24px">
-    <a href="index.php" class="btn btn-back">← Back to CMS</a>
-  </div>
+  <a href="index.php" class="btn-back">← Back to CMS</a>
 </div>
+
+<script>
+function copyField(id, btn) {
+  navigator.clipboard.writeText(document.getElementById(id).value).then(() => {
+    btn.textContent = 'Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+</script>
 </body>
 </html>
