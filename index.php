@@ -1,4 +1,7 @@
 <?php
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
 $contentFile = __DIR__ . '/content.json';
 
 if (!file_exists($contentFile)) {
@@ -41,7 +44,7 @@ $h = 'htmlspecialchars';
   <nav class="nav" id="nav">
     <div class="nav-inner">
       <a href="#" class="logo">
-        <span class="logo-mark"><?= mb_substr($h($c['nav']['logo_text']), 0, 1) ?></span>
+        <span class="logo-mark"><?= substr($h($c['nav']['logo_text']), 0, 1) ?></span>
         <span class="logo-text"><?= $h($c['nav']['logo_text']) ?></span>
       </a>
       <ul class="nav-links">
@@ -277,7 +280,7 @@ $h = 'htmlspecialchars';
     <div class="container footer-inner">
       <div class="footer-brand">
         <a href="#" class="logo">
-          <span class="logo-mark"><?= mb_substr($h($c['nav']['logo_text']), 0, 1) ?></span>
+          <span class="logo-mark"><?= substr($h($c['nav']['logo_text']), 0, 1) ?></span>
           <span class="logo-text"><?= $h($c['nav']['logo_text']) ?></span>
         </a>
         <p><?= $h($c['footer']['brand_text']) ?></p>

@@ -32,7 +32,7 @@ function generate_site($content) {
   <nav class="nav" id="nav">
     <div class="nav-inner">
       <a href="#" class="logo">
-        <span class="logo-mark"><?= $h(mb_substr($c['nav']['logo_text'], 0, 1)) ?></span>
+        <span class="logo-mark"><?= $h(substr($c['nav']['logo_text'], 0, 1)) ?></span>
         <span class="logo-text"><?= $h($c['nav']['logo_text']) ?></span>
       </a>
       <ul class="nav-links">
@@ -256,7 +256,7 @@ function generate_site($content) {
     <div class="container footer-inner">
       <div class="footer-brand">
         <a href="#" class="logo">
-          <span class="logo-mark"><?= $h(mb_substr($c['nav']['logo_text'], 0, 1)) ?></span>
+          <span class="logo-mark"><?= $h(substr($c['nav']['logo_text'], 0, 1)) ?></span>
           <span class="logo-text"><?= $h($c['nav']['logo_text']) ?></span>
         </a>
         <p><?= $h($c['footer']['brand_text']) ?></p>
