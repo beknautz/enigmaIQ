@@ -1,0 +1,8 @@
+# Prefer index.php over index.html
+DirectoryIndex index.php index.html
+
+# Protect the admin config file from direct access
+<Files "config.php">
+    Order deny,allow
+    Deny from all
+</Files>

@@ -1,5 +1,20 @@
 <?php
-$c = json_decode(file_get_contents(__DIR__ . '/content.json'), true);
+$contentFile = __DIR__ . '/content.json';
+
+if (!file_exists($contentFile)) {
+    die('<h2 style="font-family:sans-serif;padding:40px">Setup error: content.json not found.<br>Upload content.json to the site root.</h2>');
+}
+
+$raw = file_get_contents($contentFile);
+if ($raw === false) {
+    die('<h2 style="font-family:sans-serif;padding:40px">Setup error: content.json could not be read.<br>Check file permissions (should be 644).</h2>');
+}
+
+$c = json_decode($raw, true);
+if ($c === null) {
+    die('<h2 style="font-family:sans-serif;padding:40px">Setup error: content.json is not valid JSON.<br>Re-upload the original content.json file.</h2>');
+}
+
 $h = 'htmlspecialchars';
 ?>
 <!DOCTYPE html>

@@ -2,7 +2,11 @@
 require_once __DIR__ . '/auth.php';
 require_login();
 
-$content = json_decode(file_get_contents(CONTENT_FILE), true);
+$raw = file_exists(CONTENT_FILE) ? file_get_contents(CONTENT_FILE) : false;
+$content = $raw ? json_decode($raw, true) : null;
+if (!$content) {
+    die('<h2 style="font-family:sans-serif;padding:40px">content.json missing or unreadable.<br>Upload it to the site root and set permissions to 644.</h2>');
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
